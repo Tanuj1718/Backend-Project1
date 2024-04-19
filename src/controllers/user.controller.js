@@ -29,15 +29,19 @@ const registerUser = asyncHandler( async (req, res)=>{
             throw new ApiError(400, "All fields are required")
         }
 
-    //3.
-    const existedUser = User.findOne({
+    //3. check if user already exists or not
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
     if(existedUser) throw new ApiError(400, `${username} or ${email} already exists`)
 
-    //4.
+    //4. taking local path of avatar and cover image 
     const avatarLocalPath = req.files?.avatar[0]?.path; //currently not uploaded on cloudinary
-    const coverImageLocalPath = req.files?.converImage[0]?.path;
+    
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length>0){
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     //checking for avatar
     if(!avatarLocalPath) throw new ApiError(400, "Avatar file is required")
@@ -64,12 +68,12 @@ const registerUser = asyncHandler( async (req, res)=>{
         "-password -refreshToken"
     )
 
-    //8.
+    //8. checking if user is created or not
     if(!createdUser){
         throw new ApiError(500, "Something went wrong while registering a user")
     }
 
-    //9.
+    //9. if all the operations are successfully executed then returning response
     return res.status(201).json(
         new ApiResponse(200, createdUser, "User registered Successfully")
     )
