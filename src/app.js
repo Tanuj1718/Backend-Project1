@@ -21,10 +21,7 @@ app.use(cookieParser()) //cookie se data lene k liye
 import userRouter from "./routes/user.routes.js";
 
 //routes declaration
-app.use("/api/v1/users", userRouter) //router alag file m j isliye use likh rhe h wrna get likhte h
-// eg. of route-> https://localhost:8000/api/v1/users/register
-
-
+app.use("/api/v1/users", userRouter) //router alag file m j isliye use likh rhe h wrna get likhte h::--::eg. of route-> https://localhost:8000/api/v1/users/register
 
 
 
