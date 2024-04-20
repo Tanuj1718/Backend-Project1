@@ -5,6 +5,24 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 
 
+
+const generateAccessAndRefreshTokens = async (userId)=>{
+    try {
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({validateBeforeSave: false})
+
+        return {accessToken, refreshToken}
+
+
+    } catch (error) {
+        throw new ApiError(500, "Internal Server Error while generating tokens")
+    }
+}
+
 const registerUser = asyncHandler( async (req, res)=>{
     //  STEPS: 
     // get the user details from frontend
@@ -81,5 +99,44 @@ const registerUser = asyncHandler( async (req, res)=>{
 
 })
 
+//login
+const loginUser = asyncHandler(async (req, res)=>{
+    // take data from req body
+    // check if username or email is in db or not
+    // find the user 
+    // if user is available then do password check
+    // if password is correct then generate and send access token and refresh token to the user
+    // send all these in cookies and then send response
 
-export {registerUser}
+    //1.
+    const {username, email, password} = req.body
+    if(!username || !email){
+        throw new ApiError(400, "username or email is required")
+    }
+
+    //3.
+    const user = await User.findOne({
+        //below is mongodb operator which takes objects inside an array
+        $or: [{username}, {email}] //ya toh username k base pr mil jaye ya email k base par
+    })
+
+    if(!user){
+        throw new ApiError(404, "User does not exist")
+    }
+
+    //4.
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if(!isPasswordValid){
+        throw new ApiError(401, "Invalid user credentials")
+    }
+
+    //5.
+
+
+
+
+})
+
+
+export {registerUser, loginUser
+}
